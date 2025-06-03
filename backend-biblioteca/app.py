@@ -3,8 +3,11 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
 import os
-from models.conexion_bd import db, init_db  
+from models.conexion_db import db, init_db  
 from sqlalchemy import text
+from models.usuario import Usuario  # Asegúrate de que este modelo esté definido correctamente
+from models.modulo import Modulo
+from models.menu_navegacion import MenuNavegacion
 
 
 
@@ -43,10 +46,6 @@ def test_db():
         return {"message": "Conexión a la base de datos exitosa"}
     except Exception as e:
         return {"error": str(e)}
-
-
-
-
 
 
 

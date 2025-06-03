@@ -1,13 +1,13 @@
-from conexion_bd import bd
+from .conexion_db import db
 
-class Modulo(bd.Model):
+class Modulo(db.Model):
     __tablename__ = 'modulo'
 
-    id_modulo = bd.Column(bd.Integer, primary_key=True, autoincrement=True, comment='Llave primaria')
-    nombre_modulo = bd.Column(bd.String(200), nullable=False, comment='Nombre del modulo')
+    id_modulo = db.Column(db.Integer, primary_key=True, autoincrement=True, comment='Llave primaria')
+    nombre_modulo = db.Column(db.String(200), nullable=False, comment='Nombre del modulo')
 
     # Relaciones
-    menus_navegacion = bd.relationship('MenuNavegacion', back_populates='modulo')
+    menus_navegacion = db.relationship('MenuNavegacion', back_populates='modulo')
 
     def __repr__(self):
         return (

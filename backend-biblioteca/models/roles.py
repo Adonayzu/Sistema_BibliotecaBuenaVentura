@@ -1,4 +1,4 @@
-from .conexion_bd import db
+from .conexion_db import db
 from sqlalchemy.orm import relationship
 
 class Roles(db.Model):

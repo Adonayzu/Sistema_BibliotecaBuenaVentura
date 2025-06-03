@@ -1,18 +1,18 @@
-from conexion_bd import bd
+from .conexion_db import db
 from sqlalchemy.orm import relationship
 
-class MenuNavegacion(bd.Model):
+class MenuNavegacion(db.Model):
     __tablename__ = 'menu_navegacion'
 
-    id_menu_navegacion = bd.Column(bd.Integer, primary_key=True, autoincrement=True, comment='Llave foránea de la tabla menu_navegacion')
-    nombre_menu_navegacion = bd.Column(bd.String(200), nullable=False, comment='Nombre de menu a seleccionar')
-    url_menu = bd.Column(bd.String(50), nullable=False, comment='La url del menu')
-    id_modulo = bd.Column(bd.Integer, bd.ForeignKey('modulo.id_modulo'), nullable=False, comment='Llave foránea a la tabla de modulos')
-    id_tipo_estado = bd.Column(bd.Integer, nullable=False, default=2, comment='Llave foranea a la tabla de estado')
-    id_estado = bd.Column(bd.Integer, nullable=False, default=1, comment='Llave foranea a la tabla de estado')
+    id_menu_navegacion = db.Column(db.Integer, primary_key=True, autoincrement=True, comment='Llave foránea de la tabla menu_navegacion')
+    nombre_menu_navegacion = db.Column(db.String(200), nullable=False, comment='Nombre de menu a seleccionar')
+    url_menu = db.Column(db.String(50), nullable=False, comment='La url del menu')
+    id_modulo = db.Column(db.Integer, db.ForeignKey('modulo.id_modulo'), nullable=False, comment='Llave foránea a la tabla de modulos')
+    id_tipo_estado = db.Column(db.Integer, nullable=False, default=2, comment='Llave foranea a la tabla de estado')
+    id_estado = db.Column(db.Integer, nullable=False, default=1, comment='Llave foranea a la tabla de estado')
 
     __table_args__ = (
-        bd.ForeignKeyConstraint(
+        db.ForeignKeyConstraint(
             ['id_estado', 'id_tipo_estado'],
             ['estado.id_estado', 'estado.id_tipo_estado'],
         ),
