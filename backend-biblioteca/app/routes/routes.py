@@ -23,25 +23,25 @@ usuarios_bp = Blueprint('usuarios', __name__, url_prefix='/usuarios')
 roles_bp = Blueprint('roles', __name__, url_prefix='/roles')
 
 # Obtener modulos y menus segun el rol del usuario y sus roles
-@modulos_bp.route('/<int:usuario_id>', methods=['GET'])
+@modulos_bp.route('/', methods=['GET'])
 @jwt_required()
-def obtener_modulos(usuario_id):
+def obtener_modulos():
+    """
+    Obtener módulos y menús según el rol del usuario autenticado.
+    """
     try:
         # Obtener el ID del usuario autenticado desde el token
         user_id = get_jwt_identity()
         print("Token recibido, ID del usuario autenticado:", user_id)  # Log para depuración
 
-        # Validar que el usuario autenticado tiene permiso para consultar otros usuarios
         if not user_id:
             return jsonify({"msg": "No se pudo obtener el usuario autenticado"}), 401
 
-        print("Usuario ID recibido en la URL:", usuario_id)  # Log para depuración
-
-        # Consultar los roles del usuario especificado en la URL
+        # Consultar los roles del usuario autenticado
         roles = Roles.query.options(
             joinedload(Roles.menu_navegacion).joinedload(MenuNavegacion.modulo)
         ).filter_by(
-            id_usuario=usuario_id,  # Filtrar por el usuario especificado en la URL
+            id_usuario=user_id,  # Filtrar por el usuario autenticado
             id_estado=1  # Solo roles activos
         ).all()
 
@@ -69,11 +69,16 @@ def obtener_modulos(usuario_id):
         # Convertir el diccionario de módulos a una lista
         modulos_serializados = list(modulos.values())
 
-        return jsonify(modulos_serializados), 200
+        # Incluir el id_usuario en la respuesta
+        respuesta = {
+            "id_usuario": user_id,
+            "modulos": modulos_serializados
+        }
+
+        return jsonify(respuesta), 200
     except Exception as e:
         print("Error al obtener módulos:", str(e))  # Log para depuración
         return jsonify({"msg": "Error al obtener módulos", "error": str(e)}), 500
-
 
 
 

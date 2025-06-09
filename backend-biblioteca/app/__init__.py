@@ -23,9 +23,15 @@ def create_app():
     # Load configuration from Config class
     app.config.from_object(Config)
 
-    # Initialize CORS
+    # Initialize CORS para todas las rutas y métodos
     cors_origins = app.config.get("CORS_ORIGINS", "*").split(",")
-    CORS(app, resources={r"/api/*": {"origins": cors_origins}}, supports_credentials=True)
+    CORS(
+        app,
+        origins=cors_origins,
+        supports_credentials=True,
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["Content-Type", "Authorization"]
+    )
 
     # Initialize JWT Manager
     jwt = JWTManager(app)
@@ -47,6 +53,5 @@ def create_app():
 
     # Registrar blueprints de routes
     app.register_blueprint(usuarios_bp)
-
 
     return app
