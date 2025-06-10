@@ -8,7 +8,7 @@ class Prestamo(db.Model):
     id_libro = db.Column(db.Integer, db.ForeignKey('libro.id_libro'), nullable=False, comment='Llave foránea a la tabla de libro')
     fecha_prestamo = db.Column(db.Date, nullable=False, comment='Fecha del préstamo')
     fecha_devolucion_esperada = db.Column(db.Date, nullable=False, comment='Fecha esperada de devolución')
-    fecha_devolucion_real = db.Column(db.Date, nullable=False, comment='Fecha real de devolución')
+    fecha_devolucion_real = db.Column(db.Date, nullable=True, comment='Fecha real de devolución')
     observaciones = db.Column(db.String(500), nullable=False, comment='Anotaciones de la devolución del libro')
     id_tipo_estado = db.Column(db.Integer, nullable=False, default=6, comment='Llave foránea a la tabla de estado')
     id_estado = db.Column(db.Integer, nullable=False, default=1, comment='Llave foránea a la tabla de estado (1=ACTIVO, 2=DEVUELTO, 3=VENCIDO)')

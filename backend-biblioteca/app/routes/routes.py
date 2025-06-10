@@ -115,7 +115,7 @@ def create_user():
         return jsonify({"msg": "Error al crear usuario", "error": str(e)}), 500
     
 # Actualizar un usuario existente
-@usuarios_bp.route('/<int:id_usuario>', methods=['PUT'])
+@usuarios_bp.route('/update_user/<int:id_usuario>', methods=['PUT'])
 @jwt_required()
 def update_user(id_usuario):
 
@@ -163,7 +163,7 @@ def delete_user(id_usuario):
 
 
 # Obtener el listado de roles de un usuario
-@usuarios_bp.route('/<int:id_usuario>/roles', methods=['GET'])
+@usuarios_bp.route('/roles/<int:id_usuario>', methods=['GET'])
 @jwt_required()
 def obtener_roles_usuario(id_usuario):
     """
@@ -192,7 +192,7 @@ def obtener_roles_usuario(id_usuario):
         return jsonify({"msg": "Error al obtener roles del usuario", "error": str(e)}), 500
     
 # Asifnar un rol a un usuario
-@usuarios_bp.route('/<int:id_usuario>/asignar_rol', methods=['POST'])
+@usuarios_bp.route('/asignar_rol/<int:id_usuario>', methods=['POST'])
 @jwt_required()
 def asignar_rol_usuario(id_usuario):
     """

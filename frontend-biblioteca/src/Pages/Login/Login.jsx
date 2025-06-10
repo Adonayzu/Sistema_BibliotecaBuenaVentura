@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Formik, Form } from "formik";
 import { useNavigate } from "react-router-dom";
-import { axiosInstance } from "../../services/axios.config"; // Importa tu instancia de Axios
+import { axiosInstance } from "../../services/axios.config"; //para las peticiones de backend con Axios
 import {
   Container,
   Box,
@@ -90,8 +90,15 @@ const Login = () => {
           sx={{
             p: 4, // Padding interno del formulario
             width: "100%", // Asegura que ocupe todo el ancho del contenedor
-            maxWidth: "400px", // Tamaño máximo del formulario
+            maxWidth: "900px", // Tamaño máximo del formulario
             boxSizing: "border-box", // Asegura que el padding no afecte el ancho
+            borderRadius: 2, // Bordes redondeados
+             backdropFilter: "blur(10px)", // Aplica el efecto de desenfoque al fondo
+              backgroundColor: "rgba(255, 255, 255, 0.6)", // Fondo blanco semitransparente
+              boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)", // Sombra difuminada elegante
+              border: "1px solid rgba(255, 255, 255, 0.18)", // Borde sutil
+
+
           }}
         >
           <Typography
@@ -102,7 +109,7 @@ const Login = () => {
               fontSize: { xs: "1.5rem", sm: "2rem" }, // Tamaño responsivo
             }}
           >
-            Acceso Administrativo
+            Sistema Biblioteca Buenaventura
           </Typography>
           <Typography
             variant="body1"
@@ -112,7 +119,7 @@ const Login = () => {
               fontSize: { xs: "0.9rem", sm: "1rem" }, // Tamaño responsivo
             }}
           >
-            Ingrese Usuario y Contraseña
+           {/*  Ingrese Usuario y Contraseña */}
           </Typography>
           <Formik
             initialValues={{ txtUsr: "", txtPass: "" }}
@@ -139,11 +146,11 @@ const Login = () => {
                         color: "gray", // Color predeterminado de la etiqueta cuando no está en foco
                       },
                       "& .MuiInputLabel-root.Mui-focused": {
-                        color: "green", // Color de la etiqueta cuando está en foco
+                        color: "blue", // Color de la etiqueta cuando está en foco
                       },
                       "& .MuiOutlinedInput-root": {
                         "&.Mui-focused fieldset": {
-                          borderColor: "green", // Cambia el color del borde al enfocarse
+                          borderColor: "blue", // Cambia el color del borde al enfocarse
                         },
                       },
                     }}
@@ -163,11 +170,11 @@ const Login = () => {
                         color: "gray", // Color predeterminado de la etiqueta
                       },
                       "& .MuiInputLabel-root.Mui-focused": {
-                        color: "green", // Color de la etiqueta cuando está en foco
+                        color: "blue", // Color de la etiqueta cuando está en foco
                       },
                       "& .MuiOutlinedInput-root": {
                         "&.Mui-focused fieldset": {
-                          borderColor: "primary", // Cambia el color del borde al enfocarse
+                          borderColor: "blue", // Cambia el color del borde al enfocarse
                         },
                       },
                     }}
@@ -216,7 +223,7 @@ const Login = () => {
             </Typography>
             <Button
               variant="contained"
-              color="success"
+              color="primary"
               onClick={() => setModalVisible(false)}
               sx={{ mt: 2 }}
             >
