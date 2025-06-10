@@ -13,3 +13,4 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "clave-secreta")  # Valor por defecto
     ENV = os.getenv("FLASK_ENV", "development")  # Valor por defecto
     APP_PORT = int(os.getenv("APP_PORT", 5000))  # Valor por defecto: 5000  
+    CORS_ORIGINS = "*"  # O especifica los dominios permitidos

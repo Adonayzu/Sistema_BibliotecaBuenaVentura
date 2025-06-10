@@ -28,8 +28,14 @@ def create_app():
 
     # Initialize CORS
     cors_origins = app.config.get("CORS_ORIGINS", "*").split(",")
-    CORS(app, resources={r"/api/*": {"origins": cors_origins}}, supports_credentials=True)
-
+    CORS(
+        app,
+        origins=cors_origins,
+        supports_credentials=True,
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["Content-Type", "Authorization"]
+    )
+    
     # Initialize JWT Manager
     jwt = JWTManager(app)
 
