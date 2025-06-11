@@ -657,11 +657,29 @@ def obtener_todos_prestamos():
 @jwt_required()
 def obtener_prestamos_devuelto():
     try:
-        # Consultar los préstamos con estado devuelto (id_estado=2)
-        prestamos = Prestamo.query.filter_by(id_estado=2).all()
+        # Obtener los parámetros de búsqueda de la solicitud
+        isbn = request.args.get('isbn', '').strip()
+        titulo = request.args.get('titulo', '').strip()
+        nombre_cliente = request.args.get('nombre_cliente', '').strip()
+
+        # Construir la consulta base para préstamos devueltos (id_estado=2)
+        query = Prestamo.query.join(Cliente).join(Libro).filter(Prestamo.id_estado == 2)
+
+        # Aplicar filtros dinámicos según los parámetros recibidos
+        if isbn:
+            query = query.filter(Libro.isbn.ilike(f"%{isbn}%"))  # Usar ilike para búsqueda insensible a mayúsculas
+        if titulo:
+            query = query.filter(Libro.titulo.ilike(f"%{titulo}%"))
+        if nombre_cliente:
+            query = query.filter(
+                func.concat(Cliente.nombre, ' ', Cliente.apellido).ilike(f"%{nombre_cliente}%")
+            )  # Concatenar nombre y apellido para buscar por nombre completo
+
+        # Ejecutar la consulta
+        prestamos = query.all()
 
         if not prestamos:
-            return jsonify({"msg": "No se encontraron préstamos devueltos"}), 404
+            return jsonify({"msg": "No se encontraron préstamos devueltos con los filtros aplicados"}), 404
 
         # Serializar los préstamos utilizando el esquema
         prestamos_serializados = prestamos_schema.dump(prestamos)

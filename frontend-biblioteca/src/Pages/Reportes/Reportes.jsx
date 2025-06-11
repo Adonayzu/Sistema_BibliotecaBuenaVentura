@@ -10,6 +10,8 @@ import {
   Typography,
   Snackbar,
   Alert,
+  TextField,
+  Button,
 } from "@mui/material";
 import {
   StyledTableCell,
@@ -19,29 +21,43 @@ import ObtenerPrestamosDevueltos from "../../components/CrudPrestamos/ObtenerPre
 
 const Reportes = () => {
   const [prestamosDevueltos, setPrestamosDevueltos] = useState([]);
+  const [isbn, setIsbn] = useState("");
+  const [titulo, setTitulo] = useState("");
+  const [nombreCliente, setNombreCliente] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("info");
 
-  useEffect(() => {
-    cargarPrestamosDevueltos();
-  }, []);
-
   const cargarPrestamosDevueltos = async () => {
     try {
-      const data = await ObtenerPrestamosDevueltos();
+      const params = {};
+      if (isbn) params.isbn = isbn;
+      if (titulo) params.titulo = titulo;
+      if (nombreCliente) params.nombre_cliente = nombreCliente;
+
+      const data = await ObtenerPrestamosDevueltos(params);
       setPrestamosDevueltos(data || []);
     } catch {
       setPrestamosDevueltos([]);
-      setSnackbarMessage("Error al cargar los préstamos devueltos. Intente nuevamente.");
+      setSnackbarMessage(
+        "Error al cargar los préstamos devueltos. Intente nuevamente."
+      );
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     }
   };
 
+  const handleBuscar = () => {
+    cargarPrestamosDevueltos();
+  };
+
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
+
+  useEffect(() => {
+    cargarPrestamosDevueltos();
+  }, []);
 
   return (
     <Box sx={{ margin: 3 }}>
@@ -54,6 +70,7 @@ const Reportes = () => {
       >
         Reporte de Préstamos Devueltos
       </Typography>
+
       <Box
         sx={{
           display: "flex",
@@ -62,13 +79,34 @@ const Reportes = () => {
           marginBottom: 3,
         }}
       >
-        <Typography
-          variant="subtitle1"
-          component="h3"
-          sx={{ color: "text.secondary" }}
+        <TextField
+          label="ISBN"
+          value={isbn}
+          onChange={(e) => setIsbn(e.target.value)}
+          sx={{ marginRight: 2 }}
+        />
+        <TextField
+          label="Título"
+          value={titulo}
+          onChange={(e) => setTitulo(e.target.value)}
+          sx={{ marginRight: 2 }}
+        />
+        <TextField
+          label="Nombre del Cliente"
+          value={nombreCliente}
+          onChange={(e) => setNombreCliente(e.target.value)}
+          sx={{ marginRight: 2 }}
+        />
+        <Button variant="contained" color="primary" onClick={handleBuscar}>
+          Buscar
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => window.location.reload()} // esto recarga la página
         >
-          Lista de préstamos que han sido devueltos.
-        </Typography>
+          Cancelar Búsqueda
+        </Button>
       </Box>
 
       <TableContainer component={Paper} sx={{ marginTop: 2 }}>
@@ -78,6 +116,7 @@ const Reportes = () => {
               <StyledTableCell align="center">Id Préstamo</StyledTableCell>
               <StyledTableCell align="center">Cliente</StyledTableCell>
               <StyledTableCell align="center">Libro</StyledTableCell>
+              <StyledTableCell align="center">ISBN</StyledTableCell>
               <StyledTableCell align="center">Fecha Préstamo</StyledTableCell>
               <StyledTableCell align="center">Fecha Devolución</StyledTableCell>
               <StyledTableCell align="center">Observaciones</StyledTableCell>
@@ -87,8 +126,8 @@ const Reportes = () => {
           <TableBody>
             {prestamosDevueltos.length === 0 ? (
               <StyledTableRow>
-                <StyledTableCell colSpan={6} align="center">
-                  No hay préstamos devueltos registrados.
+                <StyledTableCell colSpan={7} align="center">
+                  No se encontraron préstamos devueltos.
                 </StyledTableCell>
               </StyledTableRow>
             ) : (
@@ -104,10 +143,13 @@ const Reportes = () => {
                     {prestamo.libro.titulo}
                   </StyledTableCell>
                   <StyledTableCell align="center">
+                    {prestamo.libro.isbn}
+                  </StyledTableCell>
+                  <StyledTableCell align="center">
                     {prestamo.fecha_prestamo}
                   </StyledTableCell>
                   <StyledTableCell align="center">
-                    {prestamo.fecha_devolucion || "Sin fecha"}
+                    {prestamo.fecha_devolucion}
                   </StyledTableCell>
                   <StyledTableCell align="center">
                     {prestamo.observaciones}
