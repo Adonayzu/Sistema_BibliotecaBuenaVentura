@@ -1,7 +1,7 @@
 import React from "react";
 import Sidebar from "../components/Sidebar/Sidebar";
 import { Box } from "@mui/material";
-import AppRoutes from "../routes/Routes";
+import AppRoutes from "../Routes/Routes";
 
 const Layout = ({ children }) => {
   return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -22,10 +22,10 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import ModalCrudRoles from "../../Modales/ModalRoles/ModalCrudRoles";
+import ModalCrudRoles from "../../components/Modales/ModalRoles/ModalCrudRoles";
 import ObtenerRoles from "../../components/CrudRoles/ObtenerRoles";
 import EliminarRol from "../../components/CrudRoles/EliminarRol";
-import ObtenerUsuarios from "../../components/CrudUsuarios/obtenerUsuarios";
+import ObtenerUsuarios from "../../components/CrudUsuarios/ObtenerUsuarios"
 import { StyledTableCell, StyledTableRow } from "../../components/EstilosTablas/StyledTableCell";
 
 const Roles = () => {
@@ -36,7 +36,7 @@ const Roles = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  const asignarBtnRef = useRef(null);
+
 
   useEffect(() => {
     cargarUsuarios();
@@ -58,7 +58,7 @@ const Roles = () => {
       if ((Array.isArray(data) ? data : data.usuarios)?.length > 0) {
         setUsuarioSeleccionado((Array.isArray(data) ? data : data.usuarios)[0].id_usuario);
       }
-    } catch (error) {
+    } catch  {
       setSnackbarMessage("Error al obtener los usuarios.");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -70,7 +70,7 @@ const Roles = () => {
       const data = await ObtenerRoles(idUsuario);
       // Asegura que roles siempre sea un array
       setRoles(Array.isArray(data) ? data : Array.isArray(data.roles) ? data.roles : []);
-    } catch (error) {
+    } catch  {
       setRoles([]); // <-- Esto asegura que no se quede en null
       setSnackbarMessage("Error al obtener los roles.");
       setSnackbarSeverity("error");
@@ -85,7 +85,7 @@ const Roles = () => {
       setSnackbarMessage("Rol eliminado con éxito.");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-    } catch (error) {
+    } catch  {
       setSnackbarMessage("Ocurrió un error al intentar eliminar el rol.");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -137,7 +137,7 @@ const Roles = () => {
             color="primary"
             startIcon={<AddIcon />}
             onClick={() => setOpenModal(true)}
-            ref={asignarBtnRef}
+         
             disabled={!usuarioSeleccionado}
           >
             Asignar Nuevo Rol
@@ -165,8 +165,8 @@ const Roles = () => {
             <TableHead>
               <TableRow>
                 <StyledTableCell align="center">Acciones</StyledTableCell>
-                <StyledTableCell align="center">ID Rol</StyledTableCell>
                 <StyledTableCell align="center">Nombre del Menú</StyledTableCell>
+                <StyledTableCell align="center">Nombre del Modulo</StyledTableCell>
                 {/* Puedes agregar más columnas si lo necesitas */}
               </TableRow>
             </TableHead>
@@ -190,10 +190,13 @@ const Roles = () => {
                         </IconButton>
                       </Stack>
                     </StyledTableCell>
-                    <StyledTableCell align="center">{rol.id_rol}</StyledTableCell>
                     <StyledTableCell align="center">
                       {rol.menu_navegacion?.nombre_menu_navegacion}
                     </StyledTableCell>
+                    <StyledTableCell align="center">
+                      {rol.menu_navegacion?.modulo.nombre_modulo}
+                    </StyledTableCell>
+
                   </StyledTableRow>
                 ))
               )}

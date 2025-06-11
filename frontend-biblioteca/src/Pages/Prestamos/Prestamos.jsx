@@ -1,333 +1,265 @@
-'use client'
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Container,
+  Table,
+  TableBody,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
   Box,
   Typography,
   Button,
-  Paper,
-  Modal,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
+  Snackbar,
+  Alert,
   Stack,
 } from "@mui/material";
-import { toast } from "sonner";
+import {
+  StyledTableCell,
+  StyledTableRow,
+} from "../../components/EstilosTablas/StyledTableCell";
+import ObtenerTodosPrestamos from "../../components/CrudPrestamos/ObtenerTodosPrestamos";
+import DevolucionLibro from "../../components/CrudPrestamos/DevolucionLibro";
+import CancelarPrestamo from "../../components/CrudPrestamos/CancelarPrestamo";
+import ModalCrearPrestamo from "../../components/ModalPrestamo/ModalCrearPrestamo";
+import ModalActualizarPrestamo from "../../components/ModalPrestamo/ModalActualizarPrestamo";
+import AddIcon from "@mui/icons-material/Add";
 
-const PALETTE = {
-  background: "#f5f6fa",
-  paper: "#fff",
-  blue: "#3b82f6",
-  blueDark: "#2563eb",
-  gray: "#6b7280",
-};
-
-/* interface Prestamos {
-  id: number
-  idCliente: number
-  idProducto: number
-  fechaPrestamo: string
-  fechaDevolucion: string | null
-  estado: 'prestado' | 'devuelto'
-
-interface Clientes {
-  id: number
-  nombre: string
-}
-
-interface Producto {
-  id: number
-  nombre: string
-  disponible: number
-} */
-
-export default function PrestamosPage() {
+const Prestamos = () => {
   const [prestamos, setPrestamos] = useState([]);
-  const [clientes, setClientes] = useState([]);
-  const [libros, setLibros] = useState([]);
-  const [nuevoPrestamo, setNuevoPrestamo] = useState({
-    idCliente: '',
-    idLibro: ''
-  });
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalMessage, setModalMessage] = useState("")
+  const [openModal, setOpenModal] = useState(false);
+  const [openModalActualizar, setOpenModalActualizar] = useState(false);
+  const [prestamoSeleccionado, setPrestamoSeleccionado] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("info");
 
   useEffect(() => {
-    fetch('/api/prestamos').then(r => r.json()).then(setPrestamos)
-    fetch('/api/clientes').then(r => r.json()).then(setClientes)
-    fetch('/api/libros').then(r => r.json()).then(setLibros)
-  }, [])
+    cargarPrestamos();
+  }, []);
 
-  const handleCrearPrestamo = async () => {
-    const { idCliente, idLibro } = nuevoPrestamo
-
-    if (!idCliente || !idLibro) {
-      setModalMessage("Todos los campos son obligatorios")
-      setModalVisible(true)
-      return
-    }
-
-    const libro = libros.find(l => l.id === Number(idLibro))
-    if (!libro || libro.cantidad <= 0) {
-      setModalMessage("Libro no disponible")
-      setModalVisible(true)
-      return
-    }
-
-    const res = await fetch('/api/prestamos', {
-      method: 'POST',
-      body: JSON.stringify({ idCliente, idLibro }),
-    })
-
-    if (res.ok) {
-      toast.success('Préstamo creado')
-      setNuevoPrestamo({ idCliente: '', idLibro: '' })
-      const actualizados = await fetch('/api/prestamos').then(r => r.json())
-      setPrestamos(actualizados)
-      setModalMessage("Préstamo creado correctamente")
-      setModalVisible(true)
-    } else {
-      toast.error('Error al crear préstamo')
-    }
-  }
-
-  const handleDevolver = async (id) => {
-    const res = await fetch(`/api/prestamos/${id}/devolver`, {
-      method: 'POST',
-    });
-
-    if (res.ok) {
-      toast.success('Préstamo devuelto');
-      const actualizados = await fetch('/api/prestamos').then(r => r.json());
-      setPrestamos(actualizados);
-      setModalMessage("Préstamo devuelto correctamente");
-      setModalVisible(true);
-    } else {
-      toast.error('Error al devolver préstamo');
+  const cargarPrestamos = async () => {
+    try {
+      const data = await ObtenerTodosPrestamos();
+      setPrestamos(data || []);
+    } catch {
+      setPrestamos([]);
+      setSnackbarMessage("Error al cargar los préstamos. Intente nuevamente.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
+  const refrescarPrestamos = async () => {
+    cargarPrestamos();
+  };
+
+  const handleOpenModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
+  const handleModificarPrestamo = (prestamo) => {
+    setPrestamoSeleccionado(prestamo);
+    setOpenModalActualizar(true);
+  };
+
+  const handleCloseModalActualizar = () => {
+    setOpenModalActualizar(false);
+    setPrestamoSeleccionado(null);
+  };
+
+  const handleDevolverPrestamo = async (idPrestamo) => {
+    try {
+      await DevolucionLibro(idPrestamo);
+      setSnackbarMessage("Préstamo devuelto exitosamente.");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+      refrescarPrestamos();
+    } catch {
+      setSnackbarMessage("Error al devolver el préstamo.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleCancelarPrestamo = async (idPrestamo) => {
+    try {
+      await CancelarPrestamo(idPrestamo);
+      setSnackbarMessage("Préstamo cancelado exitosamente.");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+      refrescarPrestamos();
+    } catch {
+      setSnackbarMessage("Error al cancelar el préstamo.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
+
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        minWidth: "100vw",
-        backgroundColor: PALETTE.background,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Container
-        maxWidth={false}
+    <Box sx={{ margin: 3 }}>
+      <Typography
+        variant="h4"
+        paddingBottom={2}
+        textAlign={"center"}
+        component="h2"
+        sx={{ fontWeight: "bold" }}
+      >
+        Gestión de Préstamos
+      </Typography>
+      <Box
         sx={{
           display: "flex",
-          flexDirection: "column",
+          justifyContent: "space-between",
           alignItems: "center",
-          justifyContent: "center",
-          width: "100vw",
-          maxWidth: 600,
-          px: 2,
+          marginBottom: 3,
         }}
       >
-        {/* Formulario */}
-        <Paper
-          elevation={3}
-          sx={{
-            p: 4,
-            borderRadius: 3,
-            mb: 4,
-            backgroundColor: PALETTE.paper,
-            boxShadow: "0 2px 16px 0 rgba(60,72,88,0.07)",
-          }}
+        <Typography
+          variant="subtitle1"
+          component="h3"
+          sx={{ color: "text.secondary" }}
         >
-          <Typography
-            variant="h4"
-            align="center"
-            gutterBottom
-            sx={{ color: PALETTE.blue, fontWeight: 700 }}
-          >
-            Gestión de Préstamos
-          </Typography>
-          <Box component="form" noValidate autoComplete="off">
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 2 }}>
-              <FormControl fullWidth>
-                <InputLabel sx={{ color: PALETTE.gray }}>Cliente</InputLabel>
-                <Select
-                  value={nuevoPrestamo.idCliente}
-                  label="Cliente"
-                  onChange={(e) =>
-                    setNuevoPrestamo((p) => ({
-                      ...p,
-                      idCliente: e.target.value,
-                    }))
-                  }
-                  sx={{
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: PALETTE.blue,
-                    },
-                  }}
-                >
-                  <MenuItem value="">
-                    <em>Selecciona un cliente</em>
-                  </MenuItem>
-                  {clientes.map((c) => (
-                    <MenuItem key={c.id} value={c.id}>
-                      {c.nombre}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl fullWidth>
-                <InputLabel sx={{ color: PALETTE.gray }}>Libro</InputLabel>
-                <Select
-                  value={nuevoPrestamo.idLibro}
-                  label="Libro"
-                  onChange={(e) =>
-                    setNuevoPrestamo((p) => ({
-                      ...p,
-                      idLibro: e.target.value,
-                    }))
-                  }
-                  sx={{
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: PALETTE.blue,
-                    },
-                  }}
-                >
-                  <MenuItem value="">
-                    <em>Selecciona un libro</em>
-                  </MenuItem>
-                  {libros.map((l) => (
-                    <MenuItem key={l.id} value={l.id}>
-                      {l.titulo} ({l.cantidad} disponibles)
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Stack>
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={handleCrearPrestamo}
-              sx={{
-                backgroundColor: PALETTE.blue,
-                color: "#fff",
-                fontWeight: 600,
-                letterSpacing: 1,
-                "&:hover": {
-                  backgroundColor: PALETTE.blueDark,
-                },
-              }}
-            >
-              Crear Préstamo
-            </Button>
-          </Box>
-        </Paper>
+          Préstamos registrados en el sistema.
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={handleOpenModal}
+        >
+          Asignar Nuevo Préstamo
+        </Button>
+      </Box>
 
-        {/* Lista de préstamos */}
-        <Paper elevation={2} sx={{ p: 3, borderRadius: 2, width: "100%" }}>
-          <Typography variant="h5" sx={{ color: PALETTE.blue, mb: 2 }}>
-            Préstamos Registrados
-          </Typography>
-          {prestamos.length === 0 ? (
-            <Typography color="text.secondary">No hay préstamos registrados.</Typography>
-          ) : (
-            <Stack spacing={2}>
-              {prestamos.map((p) => (
-                <Paper
-                  key={p.id}
-                  elevation={1}
-                  sx={{
-                    p: 2,
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box>
-                    <Typography>
-                      <strong>ID:</strong> {p.id}
-                    </Typography>
-                    <Typography>
-                      <strong>Cliente:</strong>{" "}
-                      {clientes.find((c) => c.id === p.idCliente)?.nombre}
-                    </Typography>
-                    <Typography>
-                      <strong>Libro:</strong>{" "}
-                      {libros.find((lb) => lb.id === p.idLibro)?.titulo}
-                    </Typography>
-                    <Typography>
-                      <strong>Fecha Préstamo:</strong>{" "}
-                      {new Date(p.fechaPrestamo).toLocaleDateString()}
-                    </Typography>
-                    <Typography>
-                      <strong>Estado:</strong> {p.estado}
-                    </Typography>
-                  </Box>
-                  {p.estado === "prestado" && (
-                    <Button
-                      variant="outlined"
-                      onClick={() => handleDevolver(p.id)}
-                      sx={{
-                        borderColor: PALETTE.blue,
-                        color: PALETTE.blue,
-                        "&:hover": {
-                          borderColor: PALETTE.blueDark,
-                          color: PALETTE.blueDark,
-                        },
-                      }}
+      <TableContainer component={Paper} sx={{ marginTop: 2 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <StyledTableCell align="center">Acciones</StyledTableCell>
+              <StyledTableCell align="center">Id Préstamo</StyledTableCell>
+              <StyledTableCell align="center">Cliente</StyledTableCell>
+              <StyledTableCell align="center">Libro</StyledTableCell>
+              <StyledTableCell align="center">Fecha Préstamo</StyledTableCell>
+              <StyledTableCell align="center">Fecha Devolución</StyledTableCell>
+              <StyledTableCell align="center">Observaciones</StyledTableCell>
+              <StyledTableCell align="center">Estado del Libro</StyledTableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {prestamos.length === 0 ? (
+              <StyledTableRow>
+                <StyledTableCell colSpan={9} align="center">
+                  No hay préstamos registrados.
+                </StyledTableCell>
+              </StyledTableRow>
+            ) : (
+              prestamos.map((prestamo) => (
+                <StyledTableRow key={prestamo.id_prestamo}>
+                  <StyledTableCell align="center">
+                    <Stack
+                      direction="row"
+                      justifyContent={"center"}
+                      spacing={1}
                     >
-                      Registrar Devolución
-                    </Button>
-                  )}
-                </Paper>
-              ))}
-            </Stack>
-          )}
-        </Paper>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        color="primary"
+                        onClick={() => handleModificarPrestamo(prestamo)}
+                      >
+                        Modificar
+                      </Button>
+                      {prestamo.id_estado === 1 && (
+                        <Button
+                          variant="contained"
+                          size="small"
+                          color="success"
+                          onClick={() =>
+                            handleDevolverPrestamo(prestamo.id_prestamo)
+                          }
+                        >
+                          Devuelto
+                        </Button>
+                      )}
+                      <Button
+                        variant="contained"
+                        size="small"
+                        color="error"
+                        onClick={() =>
+                          handleCancelarPrestamo(prestamo.id_prestamo)
+                        }
+                      >
+                        Cancelar
+                      </Button>
+                    </Stack>
+                  </StyledTableCell>
+                  <StyledTableCell align="center">
+                    {prestamo.id_prestamo}
+                  </StyledTableCell>
+                  <StyledTableCell align="center">
+                    {prestamo.cliente.nombre} {prestamo.cliente.apellido}
+                  </StyledTableCell>
+                  <StyledTableCell align="center">
+                    {prestamo.libro.titulo}
+                  </StyledTableCell>
+                  <StyledTableCell align="center">
+                    {prestamo.fecha_prestamo}
+                  </StyledTableCell>
+                  <StyledTableCell align="center">
+                    {prestamo.fecha_devolucion || "En espera"}
+                  </StyledTableCell>
+                  <StyledTableCell align="center">
+                    {prestamo.observaciones}
+                  </StyledTableCell>
+                  <StyledTableCell align="center">
+                    {prestamo.estado.nombre_estado}
+                  </StyledTableCell>
+                </StyledTableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-        {/* Modal de éxito/error */}
-        <Modal
-          open={modalVisible}
-          onClose={() => setModalVisible(false)}
-          aria-labelledby="modal-title"
+      <ModalCrearPrestamo
+        open={openModal}
+        onClose={handleCloseModal}
+        onPrestamoGuardado={refrescarPrestamos}
+      />
+
+      <ModalActualizarPrestamo
+        open={openModalActualizar}
+        onClose={handleCloseModalActualizar}
+        prestamo={prestamoSeleccionado}
+        onPrestamoActualizado={refrescarPrestamos}
+      />
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+          variant="filled"
         >
-          <Box
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: 350,
-              bgcolor: PALETTE.paper,
-              boxShadow: 24,
-              p: 4,
-              borderRadius: 2,
-              textAlign: "center",
-            }}
-          >
-            <Typography id="modal-title" variant="h6" sx={{ color: PALETTE.blue }}>
-              Aviso
-            </Typography>
-            <Typography sx={{ mt: 2, color: PALETTE.gray }}>{modalMessage}</Typography>
-            <Button
-              onClick={() => setModalVisible(false)}
-              sx={{
-                mt: 2,
-                backgroundColor: PALETTE.blue,
-                color: "#fff",
-                "&:hover": {
-                  backgroundColor: PALETTE.blueDark,
-                },
-              }}
-            >
-              Cerrar
-            </Button>
-          </Box>
-        </Modal>
-      </Container>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
-  )
-}
+  );
+};
+
+export default Prestamos;

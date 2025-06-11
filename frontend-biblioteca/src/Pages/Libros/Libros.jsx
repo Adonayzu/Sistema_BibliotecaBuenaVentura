@@ -20,8 +20,8 @@ import CrearActualizarLibro from "../../components/ModalLibro/CrearActualizarLib
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
-import ObtenerLibros from "../../components/crudLibros/ObtenerLibros";
-import EliminarLibro from "../../components/crudLibros/EliminarLibro";
+import ObtenerLibros from "../../components/CrudLibros/ObtenerLibros";
+import EliminarLibro from "../../components/CrudLibros/EliminarLibro";
 
 const ITEMS_PER_PAGE = 5;
 

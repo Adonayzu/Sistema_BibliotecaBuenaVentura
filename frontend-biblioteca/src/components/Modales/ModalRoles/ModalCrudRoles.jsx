@@ -2,7 +2,9 @@ import React, { useState, useEffect } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import { Box, Typography, Button, Modal, Snackbar, Alert } from "@mui/material";
-import { axiosInstance } from "../../services/axios.config";
+import { axiosInstance } from "../../../services/axios.config";
+
+
 
 const ModalCrudRoles = ({ open, onClose, usuarioSeleccionado, roles, onRolAsignado }) => {
   const [menuNavegacion, setMenuNavegacion] = useState([]);

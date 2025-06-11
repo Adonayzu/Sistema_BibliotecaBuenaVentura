@@ -10,8 +10,8 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import CrearUsuario from "../../components/CrudUsuarios/CrearUsuario";
-import ActualizarUsuario from "../../components/CrudUsuarios/ActualizarUsuario";
+import CrearUsuario from "../../CrudUsuarios/CrearUsuario";
+import ActualizarUsuario from "../../CrudUsuarios/ActualizarUsuario";
 
 const style = {
   position: "absolute",
@@ -78,7 +78,7 @@ const ModalCrudUsuario = ({
       setSnackbarOpen(true);
       onClose();
       if (onUsuarioCreado) onUsuarioCreado();
-    } catch (error) {
+    } catch  {
       setSnackbarMessage("Ocurrió un error al guardar el usuario.");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);

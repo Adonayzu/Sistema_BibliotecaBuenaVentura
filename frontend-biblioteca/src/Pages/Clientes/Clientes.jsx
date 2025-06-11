@@ -19,8 +19,8 @@ import { StyledTableCell, StyledTableRow } from "../../components/EstilosTablas/
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
-import ObtenerClientes from "../../components/crudClientes/ObtenerClientes";
-import EliminarCliente from "../../components/crudClientes/EliminarCliente";
+import ObtenerClientes from "../../components/CrudClientes/ObtenerClientes";
+import EliminarCliente from "../../components/CrudClientes/EliminarCliente";
 import ModalCrearActualizarCliente from "../../components/ModalClietne/ModalCrearActualizarCliente";
 
 const ITEMS_PER_PAGE = 5;

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from flask_jwt_extended import create_access_token
 from app.models import Usuario
 from app.models import Roles
@@ -72,3 +72,13 @@ def check_sistema_user():
         print("Error al verificar usuario:", str(e))  # Log para depuración
         return jsonify({"msg": "Error al verificar usuario", "error": str(e)}), 500
     
+
+# cerrar sesión
+@auth_bp.route('/logout', methods=['POST'])
+@jwt_required()
+def logout():
+    # Cerrar sesión del usuario y limpiar la sesión
+    session.clear() # Limpiar la sesión del usuario
+    return {"msg": "Finalización de Sesión", "tipo": "warning"}, 200
+
+

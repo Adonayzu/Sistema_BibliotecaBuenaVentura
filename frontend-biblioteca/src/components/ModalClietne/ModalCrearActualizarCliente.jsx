@@ -1,14 +1,31 @@
 import React, { useState, useEffect } from "react";
-import { Box, Typography, TextField, Button, Modal } from "@mui/material";
-import CrearCliente from "../crudClientes/CrearCliente";
-import ActualizarCliente from "../crudClientes/ActualizarCliente";
+import {
+  Backdrop,
+  Box,
+  Modal,
+  Fade,
+  Typography,
+  TextField,
+  Button,
+  Snackbar,
+  Alert,
+} from "@mui/material";
+import CrearCliente from "../CrudClientes/CrearCliente";
+import ActualizarCliente from "../CrudClientes/ActualizarCliente";
 
-const ModalCrearActualizarCliente = ({
-  open,
-  onClose,
-  cliente,
-  onClienteGuardado,
-}) => {
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 500,
+  bgcolor: "background.paper",
+  border: "2px solid green",
+  boxShadow: 50,
+  p: 2,
+};
+
+const ModalCrearActualizarCliente = ({ open, onClose, cliente, onClienteGuardado }) => {
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -17,104 +34,193 @@ const ModalCrearActualizarCliente = ({
     telefono: "",
     direccion: "",
   });
-  const [errorMessage, setErrorMessage] = useState("");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   useEffect(() => {
-    if (cliente) {
-      setFormData(cliente); // Si hay un cliente, carga sus datos para actualizar
-    } else {
-      setFormData({
-        nombre: "",
-        apellido: "",
-        correo: "",
-        numero_identificacion: "",
-        telefono: "",
-        direccion: "",
-      }); // Si no hay cliente, inicializa los campos vacíos para crear
+    if (open) {
+      if (cliente) {
+        setFormData(cliente);
+      } else {
+        setFormData({
+          nombre: "",
+          apellido: "",
+          correo: "",
+          numero_identificacion: "",
+          telefono: "",
+          direccion: "",
+        });
+      }
     }
-  }, [cliente]);
+  }, [cliente, open]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      let response;
-      if (cliente) {
-        // Actualizar cliente
-        response = await ActualizarCliente(formData);
-      } else {
-        // Crear cliente
-        response = await CrearCliente(formData);
-      }
+      const clienteData = {
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        correo: formData.correo,
+        numero_identificacion: formData.numero_identificacion,
+        telefono: formData.telefono,
+        direccion: formData.direccion,
+      };
 
-      // Verificar si el backend devuelve un mensaje de éxito
-      if (response?.msg) {
-        setErrorMessage(""); // Limpiar cualquier mensaje de error previo
-        onClienteGuardado(); // Llama a la función para actualizar la lista de clientes
-        onClose(); // Cierra el modal
+      if (cliente) {
+        await ActualizarCliente({ ...clienteData, id_cliente: cliente.id_cliente });
+        setSnackbarMessage("Cliente actualizado correctamente.");
+      } else {
+        await CrearCliente(clienteData);
+        setSnackbarMessage("Cliente creado correctamente.");
       }
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+      onClose();
+      if (onClienteGuardado) onClienteGuardado();
     } catch (error) {
-      // Capturar el mensaje de error del backend
-      const backendMessage = error.response?.data?.msg || "Error desconocido.";
-      setErrorMessage(backendMessage);
+      const backendMessage = error.response?.data?.msg || "Ocurrió un error al guardar el cliente.";
+      setSnackbarMessage(backendMessage);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
   return (
-    <Modal open={open} onClose={onClose}>
-      <Box
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 400,
-          bgcolor: "background.paper",
-          boxShadow: 24,
-          p: 4,
-          borderRadius: 2,
+    <>
+      <Modal
+        open={open}
+        onClose={onClose}
+        closeAfterTransition
+        slots={{ backdrop: Backdrop }}
+        slotProps={{
+          backdrop: {
+            timeout: 500,
+          },
         }}
       >
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          {cliente ? "Actualizar Cliente" : "Crear Nuevo Cliente"}
-        </Typography>
-        {[
-          { label: "Nombre", name: "nombre" },
-          { label: "Apellido", name: "apellido" },
-          { label: "Correo Electrónico", name: "correo", type: "email" },
-          { label: "Número de Identificación", name: "numero_identificacion" },
-          { label: "Teléfono", name: "telefono" },
-          { label: "Dirección", name: "direccion" },
-        ].map((field) => (
-          <TextField
-            key={field.name}
-            fullWidth
-            label={field.label}
-            name={field.name}
-            type={field.type || "text"}
-            value={formData[field.name]}
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-          />
-        ))}
-        {errorMessage && (
-          <Typography color="error" sx={{ mb: 2 }}>
-            {errorMessage}
-          </Typography>
-        )}
-        <Button
-          variant="contained"
-          fullWidth
-          onClick={handleSubmit}
-          sx={{ mt: 2 }}
+        <Fade in={open}>
+          <Box component="form" sx={style} onSubmit={handleSubmit}>
+            <Typography
+              variant="h5"
+              component="h2"
+              textAlign="center"
+              sx={{ fontWeight: "bold" }}
+            >
+              {cliente ? "Actualizar Cliente" : "Crear Nuevo Cliente"}
+            </Typography>
+            
+            <TextField
+              required
+              id="nombre"
+              name="nombre"
+              label="Nombre"
+              fullWidth
+              margin="normal"
+              value={formData.nombre}
+              onChange={handleChange}
+            />
+            <TextField
+              required
+              id="apellido"
+              name="apellido"
+              label="Apellido"
+              fullWidth
+              margin="normal"
+              value={formData.apellido}
+              onChange={handleChange}
+            />
+            <TextField
+              required
+              id="correo"
+              name="correo"
+              label="Correo Electrónico"
+              type="email"
+              fullWidth
+              margin="normal"
+              value={formData.correo}
+              onChange={handleChange}
+            />
+            <TextField
+              required
+              id="numero_identificacion"
+              name="numero_identificacion"
+              label="Número de Identificación"
+              fullWidth
+              margin="normal"
+              value={formData.numero_identificacion}
+              onChange={handleChange}
+            />
+            <TextField
+              required
+              id="telefono"
+              name="telefono"
+              label="Teléfono"
+              fullWidth
+              margin="normal"
+              value={formData.telefono}
+              onChange={handleChange}
+            />
+            <TextField
+              required
+              id="direccion"
+              name="direccion"
+              label="Dirección"
+              fullWidth
+              margin="normal"
+              value={formData.direccion}
+              onChange={handleChange}
+            />
+            
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}
+            >
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={onClose}
+                sx={{ flex: 1, mr: 1 }}
+                type="button"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                sx={{ flex: 1 }}
+              >
+                {cliente ? "Actualizar Cliente" : "Crear Cliente"}
+              </Button>
+            </Box>
+          </Box>
+        </Fade>
+      </Modal>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+          variant="filled"
         >
-          {cliente ? "Actualizar" : "Guardar"}
-        </Button>
-      </Box>
-    </Modal>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+    </>
   );
 };
 
