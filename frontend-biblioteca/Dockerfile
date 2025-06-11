@@ -4,27 +4,22 @@ FROM node:18 AS build
 # Establece el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copia los archivos necesarios al contenedor
+# Copia los archivos necesarios al contenedor e instala dependencias
 COPY package.json package-lock.json ./
-
-# Instala las dependencias
 RUN npm install
 
-# Copia el resto de los archivos del proyecto
-# esto quiere decir que copia todo el contenido del directorio actual al contenedor
+# Copia el resto de los archivos y construye la aplicación
 COPY . .
-
-# Construye la aplicación para producción
 RUN npm run build
 
 # Usa una imagen base de Nginx para servir la aplicación
 FROM nginx:stable-alpine
 
-# Copia el archivo de configuración de Nginx
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
-
 # Copia los archivos construidos al directorio de Nginx
 COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copia el archivo de configuración de Nginx
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expone el puerto 80 para servir la aplicación
 EXPOSE 80

@@ -209,16 +209,17 @@ const Sidebar = () => {
             <HomeIcon sx={{ fontSize: 40, color: "black" }} />
           </IconButton>
 
-          <IconButton
+            <IconButton
             size="large"
             edge="end"
             aria-label="account of current user"
             onClick={() => {
-              navigate("/salir");
+                sessionStorage.removeItem("token"); // Elimina el token de sesión
+                navigate("/salir"); // Navega a la ruta de salir
             }}
-          >
+            >
             <ExitToAppIcon sx={{ fontSize: 40, color: "#d50000" }} />
-          </IconButton>
+            </IconButton>
         </Toolbar>
       </AppBar>
       <Drawer

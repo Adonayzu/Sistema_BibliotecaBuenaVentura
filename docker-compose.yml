@@ -1,13 +1,13 @@
 services:
-  # Servicio del backend
   backend:
     build:
-      context: ./backend-biblioteca # Ruta al directorio del backend
+      context: ./backend-biblioteca
     container_name: backend-biblioteca-container
+    restart: unless-stopped
     ports:
       - "5000:5000"
     environment:
-      - FLASK_ENV=development
+      - FLASK_ENV=production
     depends_on:
       - mysql-db
     networks:
@@ -15,11 +15,11 @@ services:
     env_file:
       - ./backend-biblioteca/.env
 
-  # Servicio del frontend
   frontend:
     build:
       context: ./frontend-biblioteca
     container_name: frontend-biblioteca-container
+    restart: unless-stopped
     ports:
       - "3000:80"
     depends_on:
@@ -27,10 +27,10 @@ services:
     networks:
       - red-biblioteca
 
-  # Servicio de la base de datos MySQL
   mysql-db:
     image: mysql
     container_name: mysql-biblioteca-container
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root123
       MYSQL_DATABASE: bd_biblioteca
@@ -43,10 +43,10 @@ services:
     networks:
       - red-biblioteca
 
-  # Servicio de phpMyAdmin
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin-biblioteca-container
+    restart: always
     environment:
       PMA_HOST: mysql-biblioteca-container
       MYSQL_ROOT_PASSWORD: root123
@@ -58,7 +58,7 @@ services:
       - red-biblioteca
 
 volumes:
-  db_data: # Volumen para almacenar los datos del contenedor de MySQL
+  db_data:
 
 networks:
   red-biblioteca:
