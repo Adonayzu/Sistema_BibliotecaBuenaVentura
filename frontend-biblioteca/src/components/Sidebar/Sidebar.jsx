@@ -141,10 +141,7 @@ const Sidebar = () => {
     "CONFIGURACIÓN": <SettingsIcon sx={{ fontSize: 30 }} />,
     "CONTROL DE BIBLIOTECA": <MenuBookIcon sx={{ fontSize: 30 }} />,
 
-    // Ejemplo con imagen:
-    // "REPORTES": (
-    //   <Box component="img" src="/icons/reportes.png" alt="Reportes" sx={{ width: 30, height: 30 }} />
-    // ),
+
   };
 
   // Mapeo de nombres de menús a íconos (Material UI o imágenes)
@@ -156,10 +153,7 @@ const Sidebar = () => {
     "Gestión De Prestamos": <SyncIcon sx={{ fontSize: 30 }} />,
     "Reportes": <AssessmentIcon sx={{ fontSize: 30 }} />,
 
-    // Ejemplo con imagen:
-    // "Reportes": (
-    //   <Box component="img" src="/icons/reportes.png" alt="Reportes" sx={{ width: 30, height: 30 }} />
-    // ),
+
   };
 
   return (

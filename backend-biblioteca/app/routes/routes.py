@@ -6,17 +6,14 @@ from app.routes.utils import FuncionesController
 from app.models.conexion_db import db
 from app.models import Cliente, Libro, Prestamo, Usuario, Estado, Roles, MenuNavegacion, Modulo, TipoEstado
 from sqlalchemy import func
-from email_validator import validate_email, EmailNotValidError
 from app.schemas import (
     usuario_schema, usuarios_schema,
     cliente_schema, clientes_schema,
     roles_schema, roles_schema_many, AsignarRolSchema,
     libro_schema, libros_schema,
     prestamo_schema, prestamos_schema,
-    estado_schema, estados_schema,
-    menu_navegacion_schema, menu_navegaciones_schema,
-    modulo_schema, modulos_schema,
-    tipo_estado_schema, tipo_estados_schema
+    menu_navegacion_schema, menu_navegaciones_schema
+   
 )
 
 #----Blueprint-----------
@@ -309,10 +306,18 @@ def get_libros():
 @jwt_required()
 def create_book():
     try:
-        # Validar y deserializar los datos enviados en la solicitud utilizando el schema
-        nuevo_libro = libro_schema.load(request.json)
+        data = request.json
 
-        # Agregar el libro a la base de datos
+        # Validar que el ISBN sea único
+        if Libro.query.filter_by(isbn=data.get('isbn')).first():
+            return jsonify({"msg": "El ISBN ya está registrado"}), 400
+
+        # Validar que los valores numéricos sean positivos
+        if int(data.get('cantidad_disponible', 0)) < 0 or int(data.get('cantidad_total', 0)) < 0:
+            return jsonify({"msg": "Las cantidades deben ser valores positivos"}), 400
+
+        # Deserializar y crear el libro
+        nuevo_libro = libro_schema.load(data)
         db.session.add(nuevo_libro)
         db.session.commit()
 
@@ -320,7 +325,7 @@ def create_book():
     except Exception as e:
         db.session.rollback()
         print("Error al crear libro:", str(e))
-        return jsonify({"msg": "Error al crear libro", "error": str(e)}), 500
+        return jsonify({"msg": "Error interno del servidor", "error": str(e)}), 500
 
 
 # Actualizar un libro existente
@@ -328,11 +333,23 @@ def create_book():
 @jwt_required()
 def update_book(id_libro):
     try:
+        # Obtener los datos enviados en la solicitud
+        data = request.json
+
         # Buscar el libro en la base de datos
         libro = Libro.query.get_or_404(id_libro)
 
+        # Validar que los valores numéricos sean positivos
+        if int(data.get('cantidad_disponible', libro.cantidad_disponible)) < 0 or int(data.get('cantidad_total', libro.cantidad_total)) < 0:
+            return jsonify({"msg": "Las cantidades deben ser valores positivos"}), 400
+
+        # Validar que el ISBN sea único (si se envía un nuevo ISBN)
+        if 'isbn' in data and data['isbn'] != libro.isbn:
+            if Libro.query.filter_by(isbn=data['isbn']).first():
+                return jsonify({"msg": "El ISBN ya está registrado"}), 400
+
         # Validar y deserializar los datos enviados en la solicitud utilizando el schema
-        libro_schema.load(request.json, instance=libro, partial=True)
+        libro_schema.load(data, instance=libro, partial=True)
 
         # Guardar los cambios en la base de datos
         db.session.commit()
@@ -387,17 +404,21 @@ def get_clientes():
         return jsonify({"msg": "Error al obtener clientes", "error": str(e)}), 500
     
 
-
+# Crear un nuevo cliente
 @clientes_bp.route('/create_client', methods=['POST'])
 @jwt_required()
 def create_client():
     try:
-        # Validar el formato del correo electrónico
+        # Obtener los datos enviados en la solicitud
         data = request.json
-        try:
-            validate_email(data['correo'])
-        except EmailNotValidError as e:
-            return jsonify({"msg": "El correo electrónico no tiene un formato válido.", "error": str(e)}), 400
+
+        # Validar que el número de identificación sea único
+        if Cliente.query.filter_by(numero_identificacion=data['numero_identificacion']).first():
+            return jsonify({"msg": "El número de identificación ya está registrado"}), 400
+
+        # Validar que el correo electrónico sea único
+        if Cliente.query.filter_by(correo=data['correo']).first():
+            return jsonify({"msg": "El correo electrónico ya está registrado"}), 400
 
         # Validar y deserializar los datos enviados en la solicitud utilizando el schema
         nuevo_cliente = cliente_schema.load(data)
@@ -411,17 +432,23 @@ def create_client():
         db.session.rollback()
         print("Error al crear cliente:", str(e))
         return jsonify({"msg": "Error al crear cliente", "error": str(e)}), 500
-
+    
+    
+# Actualizar un cliente existente
 @clientes_bp.route('/update_client/<int:id_cliente>', methods=['PUT'])
 @jwt_required()
 def update_client(id_cliente):
     try:
-        # Validar el formato del correo electrónico
+        # Obtener los datos enviados en la solicitud
         data = request.json
-        try:
-            validate_email(data['correo'])
-        except EmailNotValidError as e:
-            return jsonify({"msg": "El correo electrónico no tiene un formato válido.", "error": str(e)}), 400
+
+        # Validar que el número de identificación sea único
+        if Cliente.query.filter_by(numero_identificacion=data['numero_identificacion']).first():
+            return jsonify({"msg": "El número de identificación ya está registrado"}), 400
+        
+        # Validar que el correo electrónico sea único
+        if Cliente.query.filter_by(correo=data['correo']).first():
+            return jsonify({"msg": "El correo electrónico ya está registrado"}), 400
 
         # Buscar el cliente en la base de datos
         cliente = Cliente.query.get_or_404(id_cliente)
@@ -471,7 +498,6 @@ def asignar_prestamo():
         data = request.get_json()
         id_cliente = data.get('id_cliente')
         id_libro = data.get('id_libro')
-        fecha_devolucion_esperada = data.get('fecha_devolucion_esperada')
         observaciones = data.get('observaciones', '')
 
         # Validar que el cliente existe y está activo
@@ -498,7 +524,7 @@ def asignar_prestamo():
             id_cliente=id_cliente,
             id_libro=id_libro,
             fecha_prestamo=func.now(),
-            fecha_devolucion_esperada=fecha_devolucion_esperada,
+            fecha_devolucion=None,  # La fecha de devolución se registrará cuando el libro sea devuelto
             observaciones=observaciones,
             id_estado=1  # Activo por defecto
         )
@@ -517,33 +543,44 @@ def asignar_prestamo():
         return jsonify({"msg": "Error al asignar préstamo", "error": str(e)}), 500
     
     
+# Actualizar un préstamo existente
+@prestamos_bp.route('/update_prestamo/<int:id_prestamo>', methods=['PUT'])
+@jwt_required()
+def update_prestamo(id_prestamo):
+    try:
+        # Buscar el préstamo en la base de datos
+        prestamo = Prestamo.query.get_or_404(id_prestamo)
+
+        # Validar y deserializar los datos enviados en la solicitud utilizando el schema
+        prestamo_schema.load(request.json, instance=prestamo, partial=True)
+
+        # Guardar los cambios en la base de datos
+        db.session.commit()
+
+        return jsonify({"msg": "Préstamo actualizado exitosamente"}), 200
+    except Exception as e:
+        db.session.rollback()
+        print("Error al actualizar préstamo:", str(e))
+        return jsonify({"msg": "Error al actualizar préstamo", "error": str(e)}), 500
+    
+    
+    
 # ruta para registrar la devolución de un libro
 @prestamos_bp.route('/devolver_prestamo/<int:id_prestamo>', methods=['PUT'])
 @jwt_required()
 def devolver_prestamo(id_prestamo):
     try:
-        # Buscar el préstamo por su ID
+        # Buscar el préstamo por su ID y que esté activo
         prestamo = Prestamo.query.filter_by(id_prestamo=id_prestamo, id_estado=1).first()
 
         if not prestamo:
             return jsonify({"msg": "Préstamo no encontrado o ya devuelto"}), 404
 
-        # Registrar la fecha de devolución real
-        prestamo.fecha_devolucion_real = func.now()
+        # Registrar la fecha de devolución
+        prestamo.fecha_devolucion = func.now()
 
-        # Refrescar el objeto para obtener los valores reales de la base de datos
-        db.session.commit()  # Guardar el cambio de fecha_devolucion_real
-        db.session.refresh(prestamo)  # Refrescar el objeto para obtener los valores actualizados
-
-        # Obtener las fechas como objetos de Python
-        fecha_devolucion_real = prestamo.fecha_devolucion_real
-        fecha_devolucion_esperada = prestamo.fecha_devolucion_esperada
-
-        # Verificar si la devolución está vencida
-        if fecha_devolucion_real > fecha_devolucion_esperada:
-            prestamo.id_estado = 3  # 3 = VENCIDO
-        else:
-            prestamo.id_estado = 2  # 2 = DEVUELTO
+        # Cambiar el estado del préstamo a "DEVUELTO"
+        prestamo.id_estado = 2  # DEVUELTO
 
         # Incrementar la cantidad disponible del libro
         libro = Libro.query.filter_by(id_libro=prestamo.id_libro).first()
@@ -560,69 +597,8 @@ def devolver_prestamo(id_prestamo):
         return jsonify({"msg": "Error al devolver préstamo", "error": str(e)}), 500
     
 
-# Ruta para actualizar el estado de un préstamo
-@prestamos_bp.route('/actualizar_estado/<int:id_prestamo>', methods=['PUT'])
-@jwt_required()
-def actualizar_estado_prestamo(id_prestamo):
-    try:
-        # Obtener los datos enviados en la solicitud
-        data = request.get_json()
-        nuevo_estado = data.get('id_estado')
 
-        # Validar que el nuevo estado sea válido
-        if nuevo_estado not in [0, 1, 2, 3]:
-            return jsonify({"msg": "Estado inválido. Los estados permitidos son: 0 (Cancelado), 1 (Activo), 2 (Devuelto), 3 (Vencido)"}), 400
 
-        # Buscar el préstamo por su ID
-        prestamo = Prestamo.query.filter_by(id_prestamo=id_prestamo).first()
-
-        if not prestamo:
-            return jsonify({"msg": "Préstamo no encontrado"}), 404
-
-        # Actualizar el estado del préstamo
-        prestamo.id_estado = nuevo_estado
-
-        # Si el estado es "Cancelado" (0), incrementar la cantidad disponible del libro
-        if nuevo_estado == 0:
-            libro = Libro.query.filter_by(id_libro=prestamo.id_libro).first()
-            if libro:
-                libro.cantidad_disponible += 1
-
-        # Guardar los cambios en la base de datos
-        db.session.commit()
-
-        return jsonify({"msg": "Estado del préstamo actualizado exitosamente"}), 200
-    except Exception as e:
-        db.session.rollback()
-        print("Error al actualizar el estado del préstamo:", str(e))
-        return jsonify({"msg": "Error al actualizar el estado del préstamo", "error": str(e)}), 500
-  
-   
-   
-# Ruta para obtener préstamos por estado 
-@prestamos_bp.route('/prestamos_por_estado/<int:id_estado>', methods=['GET'])
-@jwt_required()
-def obtener_prestamos_por_estado(id_estado):
-    try:
-        # Validar que el estado sea válido
-        if id_estado not in [0, 1, 2, 3]:
-            return jsonify({"msg": "Estado inválido. Los estados permitidos son: 0 (Cancelado), 1 (Activo), 2 (Devuelto), 3 (Vencido)"}), 400
-
-        # Consultar los préstamos por estado
-        prestamos = Prestamo.query.filter_by(id_estado=id_estado).all()
-
-        if not prestamos:
-            return jsonify({"msg": "No se encontraron préstamos con el estado especificado"}), 404
-
-        # Serializar los préstamos utilizando el esquema
-        prestamos_serializados = prestamos_schema.dump(prestamos)
-
-        return jsonify(prestamos_serializados), 200
-    except Exception as e:
-        print("Error al obtener préstamos por estado:", str(e))
-        return jsonify({"msg": "Error al obtener préstamos por estado", "error": str(e)}), 500
-    
-    
 
 # Ruta para cancelar un préstamo
 @prestamos_bp.route('/cancelar_prestamo/<int:id_prestamo>', methods=['PUT'])
@@ -660,7 +636,7 @@ def cancelar_prestamo(id_prestamo):
 def obtener_todos_prestamos():
     try:
         # Consultar todos los préstamos
-        prestamos = Prestamo.query.all()
+        prestamos = Prestamo.query.filter_by(id_estado = 1).all()  # Filtrar solo los préstamos activos
 
         if not prestamos:
             return jsonify({"msg": "No se encontraron préstamos"}), 404
@@ -672,3 +648,25 @@ def obtener_todos_prestamos():
     except Exception as e:
         print("Error al obtener todos los préstamos:", str(e))
         return jsonify({"msg": "Error al obtener todos los préstamos", "error": str(e)}), 500
+
+
+
+
+# Ruta para obtener todos los prestamos con estado devuelto para reportes
+@prestamos_bp.route('/prestamos_devuelto', methods=['GET'])
+@jwt_required()
+def obtener_prestamos_devuelto():
+    try:
+        # Consultar los préstamos con estado devuelto (id_estado=2)
+        prestamos = Prestamo.query.filter_by(id_estado=2).all()
+
+        if not prestamos:
+            return jsonify({"msg": "No se encontraron préstamos devueltos"}), 404
+
+        # Serializar los préstamos utilizando el esquema
+        prestamos_serializados = prestamos_schema.dump(prestamos)
+
+        return jsonify(prestamos_serializados), 200
+    except Exception as e:
+        print("Error al obtener préstamos devueltos:", str(e))
+        return jsonify({"msg": "Error al obtener préstamos devueltos", "error": str(e)}), 500

@@ -2,8 +2,9 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login/Login";
 import Layout from "./Layout/Layout";
-import ProtectedRoute from "./routes/ProtectedRoute";
+import ProtectedRoute from "./Routes/ProtectedRoute";
 import "./App.css";
+import CerrarSesion from "./components/CerrarSesion/CerrarSesion";
 
 
 function App() {
@@ -14,7 +15,7 @@ function App() {
       <div id="app-container" >
         <Routes>
           <Route path="/" element={<Login />} />
-          {/* <Route path="/salir" element={<CerrarSession />} /> */}
+           <Route path="/salir" element={<CerrarSesion />} />
           <Route
             path="/*"
             element={

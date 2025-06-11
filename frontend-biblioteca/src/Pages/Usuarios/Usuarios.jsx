@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -18,10 +18,11 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ModalCrudUsuario from "../../Modales/ModalUsuario/ModalCrudUsuario";
+import ModalCrudUsurio from "../../components/Modales/ModalUsuario/ModalCrudUsuario";
 import EliminarUsuario from "../../components/CrudUsuarios/EliminarUsuario";
-import ObtenerUsuarios from "../../components/CrudUsuarios/obtenerUsuarios";
+import ObtenerUsuarios from "../../components/CrudUsuarios/ObtenerUsuarios";
 import { StyledTableCell, StyledTableRow } from "../../components/EstilosTablas/StyledTableCell";
+
 
 const Usuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
@@ -30,7 +31,7 @@ const Usuarios = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  const crearBtnRef = useRef(null);
+
 
   useEffect(() => {
     cargarUsuarios();
@@ -76,25 +77,10 @@ const Usuarios = () => {
     setUsuarioSeleccionado(null);
   };
 
-  const handleModalExited = () => {
-    if (crearBtnRef.current) {
-      crearBtnRef.current.focus();
-    }
-  };
+
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "flex-start", // Ajusta el contenido al inicio
-        alignItems: "center", // Centra horizontalmente
-        width: "100%", // Ocupa todo el ancho disponible
-        minHeight: "100vh", // Ocupa toda la altura de la ventana
-        backgroundColor: "#f5f5f5", // Color de fondo
-        padding: 2, // Espaciado interno
-      }}
-    >
+    <Box>
       <Card sx={{ margin: 3, padding: 2, maxWidth: "100%", width: "100%" }}>
         <CardContent>
           <Box
@@ -130,7 +116,6 @@ const Usuarios = () => {
                 setUsuarioSeleccionado(null);
                 setOpenModal(true);
               }}
-              ref={crearBtnRef}
             >
               Crear Nuevo Usuario
             </Button>
@@ -181,12 +166,11 @@ const Usuarios = () => {
           </TableContainer>
         </CardContent>
 
-        <ModalCrudUsuario
+        <ModalCrudUsurio
           open={openModal}
           onClose={handleCloseModal}
           onUsuarioCreado={handleUsuarioCreado}
           usuario={usuarioSeleccionado}
-          onExited={handleModalExited}
         />
 
         <Snackbar

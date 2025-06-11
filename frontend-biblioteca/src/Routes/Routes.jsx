@@ -1,13 +1,13 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/Login/Login";
-import Inicio from "../Pages/Inicio/Inicio";
-import Usuarios from "../Pages/Usuarios/Usuarios";
-import Roles from "../Pages/Roles/Roles";
-import Clientes from "../Pages/Clientes/Clientes";
-import Libros from "../Pages/Libros/Libros";
-import Prestamos from "../Pages/Prestamos/Prestamos";
-import Reportes from "../Pages/Reportes/Reportes";
+import Inicio from "../pages/Inicio/Inicio";
+import Usuarios from "../pages/Usuarios/Usuarios";
+import Roles from "../pages/Roles/Roles";
+import Clientes from "../pages/Clientes/Clientes";
+import Libros from "../pages/Libros/Libros";
+import Prestamos from "../pages/Prestamos/Prestamos";
+import Reportes from "../pages/Reportes/Reportes";
 
 
 
