@@ -6,7 +6,7 @@ class Libro(db.Model):
     id_libro = db.Column(db.Integer, primary_key=True, autoincrement=True, comment='Llave primaria de la tabla libro')
     titulo = db.Column(db.String(300), nullable=False, comment='Título del libro')
     isbn = db.Column(db.String(13), nullable=False, unique=True, comment='ISBN único del libro')
-    año_publicacion = db.Column(db.Integer, nullable=False, comment='Año de publicación del libro')  # YEAR(4) se mapea como Integer
+    anio_publicacion = db.Column(db.Integer, nullable=False, comment='Año de publicación del libro')  # YEAR(4) se mapea como Integer
     nombre_autor = db.Column(db.String(200), nullable=False, comment='Nombre completo del autor')
     nombre_editorial = db.Column(db.String(200), nullable=False, comment='Nombre de la editorial')
     cantidad_disponible = db.Column(db.Integer, nullable=False, default=0, comment='Cantidad disponible para préstamo')
@@ -28,7 +28,7 @@ class Libro(db.Model):
     def __repr__(self):
         return (
             f"<Libro(id_libro={self.id_libro}, titulo='{self.titulo}', isbn='{self.isbn}', "
-            f"año_publicacion={self.año_publicacion}, nombre_autor='{self.nombre_autor}', "
+            f"anio_publicacion={self.anio_publicacion}, nombre_autor='{self.nombre_autor}', "
             f"nombre_editorial='{self.nombre_editorial}', cantidad_disponible={self.cantidad_disponible}, "
             f"cantidad_total={self.cantidad_total}, id_estado={self.id_estado}, id_tipo_estado={self.id_tipo_estado})>"
         )

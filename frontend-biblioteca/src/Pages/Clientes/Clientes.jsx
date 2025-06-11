@@ -1,302 +1,213 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Container,
+  Table,
+  TableBody,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
   Box,
   Typography,
-  TextField,
-  Button,
-  Paper,
-  Modal,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  Stack,
   IconButton,
+  Button,
+  Snackbar,
+  Alert,
+  Stack,
   Pagination,
 } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
-
-const PALETTE = {
-  background: "#f5f6fa",
-  paper: "#fff",
-  blue: "#3b82f6",
-  blueDark: "#2563eb",
-  gray: "#6b7280",
-};
+import { StyledTableCell, StyledTableRow } from "../../components/EstilosTablas/StyledTableCell";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import AddIcon from "@mui/icons-material/Add";
+import ObtenerClientes from "../../components/crudClientes/ObtenerClientes";
+import EliminarCliente from "../../components/crudClientes/EliminarCliente";
+import ModalCrearActualizarCliente from "../../components/ModalClietne/ModalCrearActualizarCliente";
 
 const ITEMS_PER_PAGE = 5;
 
 const Clientes = () => {
-  const [clients, setClients] = useState([
-    { id: 1, name: "Oscar Hernández", email: "oscar@mail.com" },
-    { id: 2, name: "Ana López", email: "ana@mail.com" },
-  ]);
-  const [newClient, setNewClient] = useState({ name: "", email: "" });
-  const [editingClientId, setEditingClientId] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
-  const [page, setPage] = useState(1);
+  const [clientes, setClientes] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("info");
 
-  // Validación de email único y formato básico
-  const isEmailValid = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  useEffect(() => {
+    cargarClientes();
+  }, [currentPage]);
 
-  const isEmailUnique = (email, idToExclude = null) => {
-    return !clients.some(client => client.email === email && client.id !== idToExclude);
-  };
-
-  const handleAddOrUpdateClient = () => {
-    if (!newClient.name || !newClient.email) {
-      setModalMessage("Todos los campos son obligatorios");
-      setModalVisible(true);
-      return;
-    }
-    if (!isEmailValid(newClient.email)) {
-      setModalMessage("Formato de correo inválido");
-      setModalVisible(true);
-      return;
-    }
-    if (!isEmailUnique(newClient.email, editingClientId)) {
-      setModalMessage("El correo ya está en uso");
-      setModalVisible(true);
-      return;
-    }
-
-    if (editingClientId !== null) {
-      // Editar cliente existente
-      setClients(clients.map(client =>
-        client.id === editingClientId ? { ...client, ...newClient } : client
-      ));
-      setEditingClientId(null);
-    } else {
-      // Agregar nuevo cliente
-      const nextId = clients.length > 0 ? Math.max(...clients.map(c => c.id)) + 1 : 1;
-      setClients([...clients, { ...newClient, id: nextId }]);
-    }
-
-    setNewClient({ name: "", email: "" });
-    setPage(1);
-  };
-
-  const handleEdit = (client) => {
-    setNewClient({ name: client.name, email: client.email });
-    setEditingClientId(client.id);
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm("¿Deseas eliminar este cliente?")) {
-      setClients(clients.filter(client => client.id !== id));
+  const cargarClientes = async () => {
+    try {
+      const data = await ObtenerClientes();
+      setClientes(data || []);
+      setTotalPages(Math.ceil((data?.length || 0) / ITEMS_PER_PAGE));
+    } catch {
+      setClientes([]);
+      setSnackbarMessage("Error al cargar los clientes. Intente nuevamente.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
-  // Paginación
-  const totalPages = Math.ceil(clients.length / ITEMS_PER_PAGE);
-  const clientsPaginados = clients.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
+  const handleChangePage = (event, newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  const handleOpenModal = (cliente = null) => {
+    setClienteSeleccionado(cliente);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setClienteSeleccionado(null);
+  };
+
+  const refrescarClientes = async () => {
+    cargarClientes();
+  };
+
+  const handleEliminarCliente = async (idCliente) => {
+    try {
+      await EliminarCliente(idCliente);
+      setSnackbarMessage("Cliente eliminado exitosamente.");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+      refrescarClientes();
+    } catch {
+      setSnackbarMessage("Error al eliminar el cliente.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
+  const clientesPaginados = clientes.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
 
-  const handleChangePage = (event, value) => {
-    setPage(value);
-  };
-
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        minWidth: "100vw",
-        backgroundColor: PALETTE.background,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Container
-        maxWidth={false}
+    <Box sx={{ margin: 3 }}>
+      <Typography variant="h4" paddingBottom={2} textAlign={"center"} component="h2" sx={{ fontWeight: "bold" }}>
+        Gestión de Clientes
+      </Typography>
+      <Box
         sx={{
           display: "flex",
-          flexDirection: "column",
+          justifyContent: "space-between",
           alignItems: "center",
-          justifyContent: "center",
-          width: "100vw",
-          maxWidth: 600,
-          px: 2,
+          marginBottom: 3,
         }}
       >
-        {/* Formulario */}
-        <Paper
-          elevation={3}
-          sx={{
-            p: 4,
-            borderRadius: 3,
-            mb: 4,
-            backgroundColor: PALETTE.paper,
-            boxShadow: "0 2px 16px 0 rgba(60,72,88,0.07)",
-          }}
+        <Typography
+          variant="subtitle1"
+          component="h3"
+          sx={{ color: "text.secondary" }}
         >
-          <Typography
-            variant="h4"
-            align="center"
-            gutterBottom
-            sx={{ color: PALETTE.blue, fontWeight: 700 }}
-          >
-            Gestión de Clientes
-          </Typography>
-          <Box component="form" noValidate autoComplete="off">
-            <Box sx={{ mb: 2 }}>
-              <TextField
-                fullWidth
-                label="Nombre completo"
-                value={newClient.name}
-                onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
-                variant="outlined"
-                sx={{
-                  "& .MuiInputLabel-root": { color: PALETTE.gray },
-                  "& .MuiInputLabel-root.Mui-focused": {
-                    color: PALETTE.blue,
-                  },
-                  "& .MuiOutlinedInput-root.Mui-focused fieldset": {
-                    borderColor: PALETTE.blue,
-                  },
-                }}
-              />
-            </Box>
-            <Box sx={{ mb: 2 }}>
-              <TextField
-                fullWidth
-                label="Correo electrónico"
-                value={newClient.email}
-                onChange={(e) => setNewClient({ ...newClient, email: e.target.value })}
-                variant="outlined"
-                sx={{
-                  "& .MuiInputLabel-root": { color: PALETTE.gray },
-                  "& .MuiInputLabel-root.Mui-focused": {
-                    color: PALETTE.blue,
-                  },
-                  "& .MuiOutlinedInput-root.Mui-focused fieldset": {
-                    borderColor: PALETTE.blue,
-                  },
-                }}
-              />
-            </Box>
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={handleAddOrUpdateClient}
-              sx={{
-                backgroundColor: PALETTE.blue,
-                color: "#fff",
-                fontWeight: 600,
-                letterSpacing: 1,
-                "&:hover": {
-                  backgroundColor: PALETTE.blueDark,
-                },
-              }}
-            >
-              {editingClientId !== null ? "Actualizar cliente" : "Agregar cliente"}
-            </Button>
-          </Box>
-        </Paper>
+          Clientes registrados en el sistema.
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={() => handleOpenModal()}
+        >
+          Agregar Nuevo Cliente
+        </Button>
+      </Box>
 
-        {/* Tabla de clientes */}
-        {clients.length > 0 && (
-          <Paper elevation={2} sx={{ p: 3, borderRadius: 2, width: "100%" }}>
-            <Typography variant="h5" sx={{ color: PALETTE.blue, mb: 2 }}>
-              Lista de Clientes
-            </Typography>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Nombre</TableCell>
-                  <TableCell>Correo</TableCell>
-                  <TableCell align="right">Acciones</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {clientsPaginados.map((client) => (
-                  <TableRow key={client.id}>
-                    <TableCell>{client.id}</TableCell>
-                    <TableCell>{client.name}</TableCell>
-                    <TableCell>{client.email}</TableCell>
-                    <TableCell align="right">
+      <TableContainer component={Paper} sx={{ marginTop: 2 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <StyledTableCell align="center">Acciones</StyledTableCell>
+              <StyledTableCell align="center">Id Cliente</StyledTableCell>
+              <StyledTableCell align="center">Nombre Completo</StyledTableCell>
+              <StyledTableCell align="center">Correo Electrónico</StyledTableCell>
+              <StyledTableCell align="center">Número de Identificación</StyledTableCell>
+              <StyledTableCell align="center">Teléfono</StyledTableCell>
+              <StyledTableCell align="center">Dirección</StyledTableCell>
+              <StyledTableCell align="center">Fecha de Ingreso</StyledTableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {clientesPaginados.length === 0 ? (
+              <StyledTableRow>
+                <StyledTableCell colSpan={3} align="center">
+                  No hay clientes registrados.
+                </StyledTableCell>
+              </StyledTableRow>
+            ) : (
+              clientesPaginados.map((cliente) => (
+                <StyledTableRow key={cliente.id_cliente}>
+                  <StyledTableCell align="center">
+                    <Stack direction="row" justifyContent={"center"} spacing={1}>
                       <IconButton
                         color="primary"
-                        onClick={() => handleEdit(client)}
-                        size="small"
+                        onClick={() => handleOpenModal(cliente)}
                       >
-                        <Edit />
+                        <EditIcon />
                       </IconButton>
                       <IconButton
                         color="error"
-                        onClick={() => handleDelete(client.id)}
-                        size="small"
+                        onClick={() => handleEliminarCliente(cliente.id_cliente)}
                       >
-                        <Delete />
+                        <DeleteIcon />
                       </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            {/* Paginación */}
-            <Stack direction="row" justifyContent="center" sx={{ mt: 2 }}>
-              <Pagination
-                count={totalPages}
-                page={page}
-                onChange={handleChangePage}
-                color="primary"
-                showFirstButton
-                showLastButton
-              />
-            </Stack>
-          </Paper>
-        )}
+                    </Stack>
+                  </StyledTableCell>
+                  <StyledTableCell align="center">{cliente.id_cliente}</StyledTableCell>
+                  <StyledTableCell align="center">{cliente.nombre + " " + cliente.apellido}</StyledTableCell>
+                  <StyledTableCell align="center">{cliente.correo}</StyledTableCell>
+                  <StyledTableCell align="center">{cliente.numero_identificacion}</StyledTableCell>
+                  <StyledTableCell align="center">{cliente.telefono}</StyledTableCell>
+                  <StyledTableCell align="center">{cliente.direccion}</StyledTableCell>
+                  <StyledTableCell align="center">{cliente.fecha_registro}</StyledTableCell>
+                </StyledTableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-        {/* Modal de error */}
-        <Modal
-          open={modalVisible}
-          onClose={() => setModalVisible(false)}
-          aria-labelledby="modal-title"
+      <Box sx={{ display: "flex", justifyContent: "center", marginTop: 2 }}>
+        <Pagination
+          count={totalPages}
+          page={currentPage}
+          onChange={handleChangePage}
+          color="primary"
+        />
+      </Box>
+
+      <ModalCrearActualizarCliente
+        open={openModal}
+        onClose={handleCloseModal}
+        cliente={clienteSeleccionado}
+        onClienteGuardado={refrescarClientes}
+      />
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+          variant="filled"
         >
-          <Box
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: 350,
-              bgcolor: PALETTE.paper,
-              boxShadow: 24,
-              p: 4,
-              borderRadius: 2,
-              textAlign: "center",
-            }}
-          >
-            <Typography id="modal-title" variant="h6" sx={{ color: PALETTE.blue }}>
-              Aviso
-            </Typography>
-            <Typography sx={{ mt: 2, color: PALETTE.gray }}>{modalMessage}</Typography>
-            <Button
-              onClick={() => setModalVisible(false)}
-              sx={{
-                mt: 2,
-                backgroundColor: PALETTE.blue,
-                color: "#fff",
-                "&:hover": {
-                  backgroundColor: PALETTE.blueDark,
-                },
-              }}
-            >
-              Cerrar
-            </Button>
-          </Box>
-        </Modal>
-      </Container>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

@@ -96,7 +96,7 @@ const AppRoutes = () => {
       
 
       {/* Redirección para rutas no encontradas */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to="/inicio" replace />} />
     </Routes>
   );
 };
