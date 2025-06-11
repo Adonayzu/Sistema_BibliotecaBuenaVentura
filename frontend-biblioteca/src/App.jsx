@@ -1,18 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login/Login";
 import Layout from "./Layout/Layout";
-import ProtectedRoute from "./Routes/ProtectedRoute";
+import ProtectedRoute from "./routes/ProtectedRoute";
 import "./App.css";
 
 
 function App() {
-  const [openModal, setOpenModal] = useState(false);
 
   return (
     <Router>
       {/* El atributo inert se aplica al contenedor principal */}
-      <div id="app-container" inert={openModal ? true : undefined}>
+      <div id="app-container" >
         <Routes>
           <Route path="/" element={<Login />} />
           {/* <Route path="/salir" element={<CerrarSession />} /> */}
@@ -20,7 +19,7 @@ function App() {
             path="/*"
             element={
               <ProtectedRoute>
-                <Layout setOpenModal={setOpenModal} />
+                <Layout />
               </ProtectedRoute>
             }
           />

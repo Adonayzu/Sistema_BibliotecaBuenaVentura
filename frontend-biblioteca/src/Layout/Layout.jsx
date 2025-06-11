@@ -15,7 +15,7 @@ const Layout = ({ children }) => {
           flexGrow: 1, // Permite que el contenido principal ocupe el espacio restante
           p: 2, // Espaciado interno
           paddingTop: "85px", // Espaciado superior
-          backgroundColor: "#fafafa", // Color de fondo del contenido principal
+         // backgroundColor: "#fafafa", // Color de fondo del contenido principal
           minHeight: "100vh", // Asegura que ocupe toda la altura de la ventana
         }}
       >

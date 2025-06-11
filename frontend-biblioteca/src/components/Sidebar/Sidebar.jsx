@@ -105,14 +105,6 @@ const Sidebar = () => {
   const [modulos, setModulos] = useState([]);
   const [error, setError] = useState(null);
 
-  // Obtener el usuario autenticado desde sessionStorage
-  let usuarioId = null;
-  try {
-    const usuario = JSON.parse(sessionStorage.getItem("usuario"));
-    usuarioId = usuario && usuario.id_usuario ? usuario.id_usuario : null;
-  } catch {
-    usuarioId = null;
-  }
 
   const handleDrawerOpen = () => {
     setOpen(true);

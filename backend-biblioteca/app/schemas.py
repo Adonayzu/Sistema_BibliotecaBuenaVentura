@@ -29,7 +29,7 @@ estado_schema = EstadoSchema()  # Esquema para un solo estado
 
 # Esquema para Cliente
 class ClienteSchema(ma.SQLAlchemyAutoSchema):
-    estado = ma.Nested(EstadoSchema)
+   # estado = ma.Nested(EstadoSchema)
     
     class Meta: 
         model = Cliente
@@ -41,7 +41,7 @@ clientes_schema = ClienteSchema(many=True)  # Esquema para múltiples clientes
 
 # Esquema para Libro
 class LibroSchema(ma.SQLAlchemyAutoSchema):
-    estado = ma.Nested(EstadoSchema)
+   # estado = ma.Nested(EstadoSchema)
     
     class Meta: 
         model = Libro

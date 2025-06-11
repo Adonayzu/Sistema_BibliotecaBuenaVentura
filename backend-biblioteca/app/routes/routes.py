@@ -6,6 +6,7 @@ from app.routes.utils import FuncionesController
 from app.models.conexion_db import db
 from app.models import Cliente, Libro, Prestamo, Usuario, Estado, Roles, MenuNavegacion, Modulo, TipoEstado
 from sqlalchemy import func
+from email_validator import validate_email, EmailNotValidError
 from app.schemas import (
     usuario_schema, usuarios_schema,
     cliente_schema, clientes_schema,
@@ -385,13 +386,21 @@ def get_clientes():
         print("Error al obtener clientes:", str(e))
         return jsonify({"msg": "Error al obtener clientes", "error": str(e)}), 500
     
-# Crear un nuevo cliente
+
+
 @clientes_bp.route('/create_client', methods=['POST'])
 @jwt_required()
 def create_client():
     try:
+        # Validar el formato del correo electrónico
+        data = request.json
+        try:
+            validate_email(data['correo'])
+        except EmailNotValidError as e:
+            return jsonify({"msg": "El correo electrónico no tiene un formato válido.", "error": str(e)}), 400
+
         # Validar y deserializar los datos enviados en la solicitud utilizando el schema
-        nuevo_cliente = cliente_schema.load(request.json)
+        nuevo_cliente = cliente_schema.load(data)
 
         # Agregar el cliente a la base de datos
         db.session.add(nuevo_cliente)
@@ -402,17 +411,23 @@ def create_client():
         db.session.rollback()
         print("Error al crear cliente:", str(e))
         return jsonify({"msg": "Error al crear cliente", "error": str(e)}), 500
-    
-# Actualizar un cliente existente
+
 @clientes_bp.route('/update_client/<int:id_cliente>', methods=['PUT'])
 @jwt_required()
 def update_client(id_cliente):
     try:
+        # Validar el formato del correo electrónico
+        data = request.json
+        try:
+            validate_email(data['correo'])
+        except EmailNotValidError as e:
+            return jsonify({"msg": "El correo electrónico no tiene un formato válido.", "error": str(e)}), 400
+
         # Buscar el cliente en la base de datos
         cliente = Cliente.query.get_or_404(id_cliente)
 
         # Validar y deserializar los datos enviados en la solicitud utilizando el schema
-        cliente_schema.load(request.json, instance=cliente, partial=True)
+        cliente_schema.load(data, instance=cliente, partial=True)
 
         # Guardar los cambios en la base de datos
         db.session.commit()
