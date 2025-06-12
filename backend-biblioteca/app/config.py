@@ -5,7 +5,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URI")  # Cargado desde .env
     
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")  
-    JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 3600))  
+    JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 10800))  # 3 horas por defecto
     SECRET_KEY = os.getenv("SECRET_KEY") 
     ENV = os.getenv("FLASK_ENV", "production")  
     APP_PORT = int(os.getenv("APP_PORT", 5000))  

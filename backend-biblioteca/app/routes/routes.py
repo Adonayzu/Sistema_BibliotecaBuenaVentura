@@ -442,14 +442,6 @@ def update_client(id_cliente):
         # Obtener los datos enviados en la solicitud
         data = request.json
 
-        # Validar que el número de identificación sea único
-        if Cliente.query.filter_by(numero_identificacion=data['numero_identificacion']).first():
-            return jsonify({"msg": "El número de identificación ya está registrado"}), 400
-        
-        # Validar que el correo electrónico sea único
-        if Cliente.query.filter_by(correo=data['correo']).first():
-            return jsonify({"msg": "El correo electrónico ya está registrado"}), 400
-
         # Buscar el cliente en la base de datos
         cliente = Cliente.query.get_or_404(id_cliente)
 
@@ -660,7 +652,7 @@ def obtener_prestamos_devuelto():
         # Obtener los parámetros de búsqueda de la solicitud
         isbn = request.args.get('isbn', '').strip()
         titulo = request.args.get('titulo', '').strip()
-        nombre_cliente = request.args.get('nombre_cliente', '').strip()
+        nombre = request.args.get('nombre_cliente', '').strip()
 
         # Construir la consulta base para préstamos devueltos (id_estado=2)
         query = Prestamo.query.join(Cliente).join(Libro).filter(Prestamo.id_estado == 2)
@@ -670,10 +662,6 @@ def obtener_prestamos_devuelto():
             query = query.filter(Libro.isbn.ilike(f"%{isbn}%"))  # Usar ilike para búsqueda insensible a mayúsculas
         if titulo:
             query = query.filter(Libro.titulo.ilike(f"%{titulo}%"))
-        if nombre_cliente:
-            query = query.filter(
-                func.concat(Cliente.nombre, ' ', Cliente.apellido).ilike(f"%{nombre_cliente}%")
-            )  # Concatenar nombre y apellido para buscar por nombre completo
 
         # Ejecutar la consulta
         prestamos = query.all()

@@ -7,7 +7,7 @@ const ObtenerPrestamosDevueltos = async (params = {}) => {
       headers: {
         Authorization: `Bearer ${token}`, // Agregar el token en los headers
       },
-      params, // Agregar los parámetros de búsqueda
+      params, // parámetros de búsqueda
     });
     return response.data; // Devolver la respuesta de la API
   } catch (error) {
