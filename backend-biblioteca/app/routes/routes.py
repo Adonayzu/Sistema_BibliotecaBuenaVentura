@@ -652,7 +652,6 @@ def obtener_prestamos_devuelto():
         # Obtener los parámetros de búsqueda de la solicitud
         isbn = request.args.get('isbn', '').strip()
         titulo = request.args.get('titulo', '').strip()
-        nombre = request.args.get('nombre_cliente', '').strip()
 
         # Construir la consulta base para préstamos devueltos (id_estado=2)
         query = Prestamo.query.join(Cliente).join(Libro).filter(Prestamo.id_estado == 2)
