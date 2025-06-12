@@ -34,6 +34,7 @@ const CrearActualizarLibro = ({ open, onClose, libro, onLibroGuardado }) => {
     nombre_editorial: "",
     cantidad_disponible: "",
     cantidad_total: "",
+    observaciones: ""
   });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -52,6 +53,7 @@ const CrearActualizarLibro = ({ open, onClose, libro, onLibroGuardado }) => {
           nombre_editorial: "",
           cantidad_disponible: "",
           cantidad_total: "",
+          observaciones: ""
         });
       }
     }

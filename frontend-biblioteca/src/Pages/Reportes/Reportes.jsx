@@ -23,7 +23,6 @@ const Reportes = () => {
   const [prestamosDevueltos, setPrestamosDevueltos] = useState([]);
   const [isbn, setIsbn] = useState("");
   const [titulo, setTitulo] = useState("");
-  const [nombreCliente, setNombreCliente] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("info");
@@ -33,7 +32,6 @@ const Reportes = () => {
       const params = {};
       if (isbn) params.isbn = isbn;
       if (titulo) params.titulo = titulo;
-      if (nombreCliente) params.nombre_cliente = nombreCliente;
 
       const data = await ObtenerPrestamosDevueltos(params);
       setPrestamosDevueltos(data || []);
@@ -79,6 +77,8 @@ const Reportes = () => {
           marginBottom: 3,
         }}
       >
+
+        {/* Campos de búsqueda */}
         <TextField
           label="ISBN"
           value={isbn}
@@ -89,12 +89,6 @@ const Reportes = () => {
           label="Título"
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
-          sx={{ marginRight: 2 }}
-        />
-        <TextField
-          label="Nombre del Cliente"
-          value={nombreCliente}
-          onChange={(e) => setNombreCliente(e.target.value)}
           sx={{ marginRight: 2 }}
         />
         <Button variant="contained" color="primary" onClick={handleBuscar}>
