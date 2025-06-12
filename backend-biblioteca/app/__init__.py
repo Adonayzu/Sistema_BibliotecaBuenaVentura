@@ -31,6 +31,7 @@ def create_app():
 
     # Inicializar Marshmallow
     ma.init_app(app)
+    
     # Registrar el blueprint de autenticación
     app.register_blueprint(auth_bp)
     
