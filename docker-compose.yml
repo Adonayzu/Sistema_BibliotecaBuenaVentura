@@ -1,0 +1,65 @@
+services:
+  backend:
+    build:
+      context: ./backend-biblioteca
+    container_name: backend-biblioteca-container
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+    depends_on:
+      - mysql-db
+    networks:
+      - red-biblioteca
+    env_file:
+      - ./backend-biblioteca/.env
+
+  frontend:
+    build:
+      context: ./frontend-biblioteca
+    container_name: frontend-biblioteca-container
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - red-biblioteca
+
+  mysql-db:
+    image: mysql
+    container_name: mysql-biblioteca-container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: bd_biblioteca
+      MYSQL_USER: biblioteca
+      MYSQL_PASSWORD: 12345
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - red-biblioteca
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin-biblioteca-container
+    restart: always
+    environment:
+      PMA_HOST: mysql-biblioteca-container
+      MYSQL_ROOT_PASSWORD: root123
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql-db
+    networks:
+      - red-biblioteca
+
+volumes:
+  db_data:
+
+networks:
+  red-biblioteca:
+    driver: bridge
